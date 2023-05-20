@@ -1,0 +1,17 @@
+export MY_NAMESPACE=sn-labs-$USERNAME
+docker build . -t us.icr.io/$MY_NAMESPACE/guestbook:v1
+docker push us.icr.io/$MY_NAMESPACE/guestbook:v1
+ibmcloud cr images
+
+------------- KUBERNETES --------------------
+kubectl apply -f deployment.yml
+kubectl port-forward deployment.apps/guestbook 3000:3000
+
+----------Autoscale the Guestbook application using Horizontal Pod Autoscaler----------
+kubectl autoscale deployment guestbook --cpu-percent=5 --min=1 --max=10
+kubectl run -i --tty load-generator --rm --image=busybox:1.36.0 --restart=Never -- /bin/sh -c "while sleep 0.01; do wget -q -O- https://mahadrasool1-3000.theiaopenshift-1-labs-prod-theiaopenshift-4-tor01.proxy.cognitiveclass.ai/; done"
+
+
+
+----------------------Perform Rolling Updates and Rollbacks on the Guestbook application------------------
+docker build . -t us.icr.io/$MY_NAMESPACE/guestbook:v1 && docker push us.icr.io/$MY_NAMESPACE/guestbook:v1
